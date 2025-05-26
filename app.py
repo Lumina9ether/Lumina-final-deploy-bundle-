@@ -7,10 +7,10 @@ import json
 import re
 from datetime import datetime
 from google.cloud import texttospeech
-import stripe  # <--- Added this import
+import stripe  # <--- Added
 
 # Initialize Stripe
-stripe.api_key = os.getenv("STRIPE_SECRET_KEY")  # <--- Uses environment variable for security
+stripe.api_key = os.getenv("STRIPE_SECRET_KEY")  # <--- Uses environment variable
 
 app = Flask(__name__)
 CORS(app)
@@ -123,6 +123,30 @@ def ask():
         return jsonify({"reply": answer})
     except Exception as e:
         return jsonify({"reply": f"Error: {str(e)}"})
+
+@app.route("/create-checkout-session", methods=["POST"])
+def create_checkout_session():
+    try:
+        session = stripe.checkout.Session.create(
+            payment_method_types=["card"],
+            line_items=[{
+                "price_data": {
+                    "currency": "usd",
+                    "unit_amount": 49700,  # $497 in cents
+                    "product_data": {
+                        "name": "Lumina Academy Access",
+                        "description": "Access to Lumina Academy"
+                    },
+                },
+                "quantity": 1,
+            }],
+            mode="payment",
+            success_url="https://yourdomain.com/academy.html?session_id={CHECKOUT_SESSION_ID}",
+            cancel_url="https://yourdomain.com/?canceled=true",
+        )
+        return jsonify({"url": session.url})
+    except Exception as e:
+        return jsonify(error=str(e)), 403
 
 @app.route("/speak", methods=["POST"])
 def speak():
