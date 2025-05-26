@@ -1,4 +1,3 @@
-
 from flask import Flask, request, jsonify, render_template
 from flask_cors import CORS
 import openai
@@ -8,6 +7,10 @@ import json
 import re
 from datetime import datetime
 from google.cloud import texttospeech
+import stripe  # <--- Added this import
+
+# Initialize Stripe
+stripe.api_key = os.getenv("STRIPE_SECRET_KEY")  # <--- Uses environment variable for security
 
 app = Flask(__name__)
 CORS(app)
